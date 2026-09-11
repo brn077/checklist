@@ -85,7 +85,7 @@
   }
   .btn-primary::after{content:"";position:absolute;top:0;left:-60%;width:40%;height:100%;
     background:linear-gradient(120deg,transparent,rgba(255,255,255,.55),transparent);
-    transform:skewX(-20deg);animation:shine 3.2s ease-in-out infinite;}
+    transform:skewX(-20deg);animation:shine 3.2s ease-in-out infinite;pointer-events:none;}
   @keyframes shine{0%{left:-60%;}45%{left:120%;}100%{left:120%;}}
   .btn-primary:hover{filter:brightness(1.06);}
   .toggle-auth{text-align:center;margin-top:18px;font-size:.85rem;color:var(--muted);}
@@ -103,15 +103,31 @@
   .resumo .card .lbl{font-size:.68rem;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:1px;}
 
   .bonus-card{
-    background:var(--panel);border:1px solid var(--line);border-radius:10px;
-    margin-bottom:16px;overflow:hidden;opacity:0;
+    background:linear-gradient(160deg,#1a1206 0%, var(--bg2) 45%, #0d0d0d 100%);
+    border:1.5px solid var(--gold-deep);border-radius:10px;
+    margin-bottom:20px;overflow:hidden;opacity:0;
+    box-shadow:0 12px 30px rgba(0,0,0,.55), inset 0 0 0 1px rgba(242,169,59,.10);
     animation:dealIn .5s cubic-bezier(.2,.7,.3,1) forwards;
     position:relative;
   }
   @keyframes dealIn{from{opacity:0;transform:translateY(36px) rotate(-4deg) scale(.94);}
     to{opacity:1;transform:translateY(0) rotate(0) scale(1);}}
   .bonus-card::before{content:attr(data-suit);position:absolute;top:8px;right:14px;
-    font-size:1.6rem;color:var(--gold);opacity:.14;pointer-events:none;}
+    font-size:1.6rem;color:var(--gold);opacity:.14;pointer-events:none;z-index:1;}
+  /* brilho holográfico passando pelo ticket, como um bilhete premium */
+  .bonus-card::after{content:"";position:absolute;top:0;left:-60%;width:40%;height:100%;
+    background:linear-gradient(120deg,transparent,rgba(255,211,122,.16),transparent);
+    transform:skewX(-20deg);animation:shine 6s ease-in-out infinite;pointer-events:none;}
+  @media (prefers-reduced-motion: reduce){ .bonus-card::after{animation:none;} }
+
+  /* selo "Chip Bonus" no canto, estilo ticket de torneio */
+  .chip-badge{
+    position:relative;z-index:2;display:inline-flex;align-items:center;gap:6px;
+    margin:14px 0 -4px 14px;padding:4px 12px 4px 10px;border-radius:3px;
+    background:linear-gradient(180deg,var(--gold-light),var(--gold-deep));
+    color:#1a1207;font-family:'Oswald',sans-serif;font-weight:700;font-size:.62rem;
+    letter-spacing:1.5px;text-transform:uppercase;box-shadow:0 3px 8px rgba(0,0,0,.4);
+  }
   .bonus-head{padding:18px 18px 14px;cursor:pointer;display:flex;justify-content:space-between;gap:12px;align-items:flex-start;}
   .bonus-head .info h3{font-size:1.02rem;color:var(--white);margin-bottom:6px;letter-spacing:.2px;}
   .bonus-head .info .tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;}
@@ -130,20 +146,31 @@
     background-size:200% 100%;animation:sweep 3s linear infinite;}
   .progress-pct{font-size:.68rem;color:var(--muted);margin-top:5px;font-family:'Oswald',sans-serif;}
 
-  .bonus-body{max-height:0;overflow:hidden;transition:max-height .35s ease;border-top:1px solid var(--line);}
-  .bonus-card.open .bonus-body{max-height:900px;}
-  .bonus-body-inner{padding:16px 18px 22px;}
-  .etapa{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px dashed var(--line);}
+  .bonus-body{max-height:0;overflow:hidden;transition:max-height .35s ease;
+    border-top:2px dashed rgba(242,169,59,.35);position:relative;}
+  .bonus-card.open .bonus-body{max-height:1400px;}
+  /* furinhos de picote, como um canhoto de ticket de torneio */
+  .bonus-body::before, .bonus-body::after{
+    content:"";position:absolute;top:-8px;width:16px;height:16px;border-radius:50%;
+    background:var(--bg);border:1.5px solid rgba(242,169,59,.35);z-index:2;
+  }
+  .bonus-body::before{left:-8px;}
+  .bonus-body::after{right:-8px;}
+  .bonus-body-inner{padding:18px 10px 22px;}
+  .etapa{display:flex;align-items:center;gap:12px;padding:13px 8px;margin:0 8px;
+    border-bottom:1px dashed var(--line);cursor:pointer;border-radius:6px;
+    -webkit-tap-highlight-color:transparent;transition:background .15s;}
+  .etapa:hover, .etapa:active{background:rgba(242,169,59,.06);}
   .etapa:last-child{border-bottom:none;}
   .etapa input[type=checkbox]{
-    appearance:none;width:20px;height:20px;border-radius:4px;border:1.5px solid var(--muted);
-    margin-top:1px;cursor:pointer;flex-shrink:0;position:relative;background:#000;
+    appearance:none;width:26px;height:26px;border-radius:50%;border:2px solid var(--muted);
+    cursor:pointer;flex-shrink:0;position:relative;background:#000;
   }
   .etapa input[type=checkbox]:checked{background:var(--gold);border-color:var(--gold);animation:chipPulse .5s ease-out;}
   .etapa input[type=checkbox]:checked::after{content:"✓";position:absolute;inset:0;display:flex;
-    align-items:center;justify-content:center;font-size:13px;color:#1a1207;font-weight:700;}
+    align-items:center;justify-content:center;font-size:15px;color:#1a1207;font-weight:700;}
   @keyframes chipPulse{0%{box-shadow:0 0 0 0 rgba(242,169,59,.65);}100%{box-shadow:0 0 0 12px rgba(242,169,59,0);}}
-  .etapa .txt{font-size:.9rem;color:var(--white);}
+  .etapa .txt{font-size:.92rem;color:var(--white);}
   .etapa.done .txt{color:var(--muted);text-decoration:line-through;}
   .validade{font-size:.74rem;color:var(--muted);margin-top:14px;font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:.5px;}
   .regras{font-size:.78rem;color:var(--muted);margin-top:8px;font-style:italic;}
@@ -335,6 +362,7 @@ function renderizar(){
 
     html += `
       <div class="bonus-card" id="card-${id}" data-suit="${SUITS[idx % 4]}" style="animation-delay:${idx*0.08}s">
+        <div class="chip-badge">🪙 Chip Bonus</div>
         <div class="bonus-head" onclick="toggleCard('${id}')">
           <div class="info">
             <h3>${escapeHtml(b.titulo || 'Bônus')}</h3>
@@ -355,10 +383,10 @@ function renderizar(){
           <div class="bonus-body-inner">
             ${etapaIds.map(eid => {
               const feita = !!progressoBonus[eid];
-              return `<div class="etapa ${feita?'done':''}">
+              return `<label class="etapa ${feita?'done':''}">
                 <input type="checkbox" ${feita?'checked':''} onclick="marcarEtapa('${id}','${eid}',this.checked)">
                 <span class="txt">${escapeHtml(etapas[eid].texto || '')}</span>
-              </div>`;
+              </label>`;
             }).join('')}
             ${pct===100 && totalEtapas>0 ? '<div class="concluido-badge">✓ Concluído</div>' : ''}
             ${b.validade ? `<div class="validade">Válido até ${escapeHtml(b.validade)}</div>` : ''}

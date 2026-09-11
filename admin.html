@@ -55,7 +55,7 @@
     font-size:.82rem;cursor:pointer;font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:1.5px;}
   .btn-primary::after{content:"";position:absolute;top:0;left:-60%;width:40%;height:100%;
     background:linear-gradient(120deg,transparent,rgba(255,255,255,.5),transparent);
-    transform:skewX(-20deg);animation:shine 3.2s ease-in-out infinite;}
+    transform:skewX(-20deg);animation:shine 3.2s ease-in-out infinite;pointer-events:none;}
   @keyframes shine{0%{left:-60%;}45%{left:120%;}100%{left:120%;}}
   .btn-primary:hover{filter:brightness(1.06);}
   .btn-ghost{padding:10px 18px;border:1px solid var(--line);border-radius:6px;background:transparent;
@@ -165,7 +165,7 @@
     <div id="painelBonus">
       <div class="toolbar">
         <span id="contadorBonus"></span>
-        <button class="btn-primary" onclick="abrirModal()">+ Novo bônus</button>
+        <button class="btn-primary" onclick="abrirModal()">+ Novo Chip Bonus</button>
       </div>
       <div id="listaBonusAdmin"></div>
     </div>
@@ -179,29 +179,11 @@
 <!-- MODAL DE BÔNUS -->
 <div class="overlay" id="overlay">
   <div class="modal">
-    <h2 id="modalTitulo">Novo bônus</h2>
+    <h2 id="modalTitulo">Novo chip bonus</h2>
     <input type="hidden" id="bonusId">
-    <div class="field"><label>Título do bônus</label><input type="text" id="fTitulo" placeholder="Ex: Bônus de boas-vindas 100%"></div>
-    <div class="row2">
-      <div class="field"><label>Plataforma / Site</label><input type="text" id="fPlataforma" placeholder="Ex: NomeDoSite"></div>
-      <div class="field"><label>Categoria</label>
-        <select id="fCategoria">
-          <option value="Boas-vindas">Boas-vindas</option>
-          <option value="Recarga">Recarga</option>
-          <option value="Rakeback">Rakeback</option>
-          <option value="Freeroll">Freeroll</option>
-          <option value="Cashback">Cashback</option>
-          <option value="Indicação">Indicação</option>
-          <option value="Outro">Outro</option>
-        </select>
-      </div>
-    </div>
-    <div class="row2">
-      <div class="field"><label>Valor do bônus</label><input type="text" id="fValor" placeholder="Ex: R$ 50 ou até 100%"></div>
-      <div class="field"><label>Validade</label><input type="date" id="fValidade"></div>
-    </div>
+    <div class="field"><label>Título do bônus</label><input type="text" id="fTitulo" placeholder="Ex: Chip Bonus de Boas-vindas"></div>
+    <div class="field"><label>Valor em fichas</label><input type="text" id="fValor" placeholder="Ex: 5.000 fichas"></div>
     <div class="field"><label>Descrição (aparece para o cliente)</label><textarea id="fDescricao" placeholder="Resumo curto do bônus"></textarea></div>
-    <div class="field"><label>Regras / observações</label><textarea id="fRegras" placeholder="Termos, rollover, condições..."></textarea></div>
 
     <div class="field">
       <label>Etapas do checklist</label>
@@ -317,15 +299,11 @@ function renderBonus(){
 }
 
 function abrirModal(){
-  document.getElementById('modalTitulo').textContent = 'Novo bônus';
+  document.getElementById('modalTitulo').textContent = 'Novo chip bonus';
   document.getElementById('bonusId').value = '';
   document.getElementById('fTitulo').value = '';
-  document.getElementById('fPlataforma').value = '';
-  document.getElementById('fCategoria').value = 'Boas-vindas';
   document.getElementById('fValor').value = '';
-  document.getElementById('fValidade').value = '';
   document.getElementById('fDescricao').value = '';
-  document.getElementById('fRegras').value = '';
   document.getElementById('fAtivo').checked = true;
   etapasFormLocal = [{texto:''}];
   renderEtapasForm();
@@ -341,15 +319,11 @@ function fecharModal(){ document.getElementById('overlay').classList.remove('sho
 
 function editarBonus(id){
   const b = bonusData[id];
-  document.getElementById('modalTitulo').textContent = 'Editar bônus';
+  document.getElementById('modalTitulo').textContent = 'Editar chip bonus';
   document.getElementById('bonusId').value = id;
   document.getElementById('fTitulo').value = b.titulo || '';
-  document.getElementById('fPlataforma').value = b.plataforma || '';
-  document.getElementById('fCategoria').value = b.categoria || 'Boas-vindas';
   document.getElementById('fValor').value = b.valor || '';
-  document.getElementById('fValidade').value = b.validade || '';
   document.getElementById('fDescricao').value = b.descricao || '';
-  document.getElementById('fRegras').value = b.regras || '';
   document.getElementById('fAtivo').checked = b.ativo !== false;
 
   const etapas = b.etapas || {};
@@ -387,16 +361,14 @@ function salvarBonus(){
       etapasObj[eid] = { texto: e.texto.trim(), ordem: idx };
     });
 
+  const existente = bonusData[id] || {};
   const bonusObj = {
+    ...existente, // preserva campos antigos (plataforma/categoria/validade/regras) se já existiam
     titulo,
-    plataforma: document.getElementById('fPlataforma').value.trim(),
-    categoria: document.getElementById('fCategoria').value,
     valor: document.getElementById('fValor').value.trim(),
-    validade: document.getElementById('fValidade').value,
     descricao: document.getElementById('fDescricao').value.trim(),
-    regras: document.getElementById('fRegras').value.trim(),
     ativo: document.getElementById('fAtivo').checked,
-    ordem: (bonusData[id] && bonusData[id].ordem) || Object.keys(bonusData).length,
+    ordem: existente.ordem ?? Object.keys(bonusData).length,
     etapas: etapasObj
   };
 
