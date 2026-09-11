@@ -128,18 +128,35 @@
     color:#1a1207;font-family:'Oswald',sans-serif;font-weight:700;font-size:.62rem;
     letter-spacing:1.5px;text-transform:uppercase;box-shadow:0 3px 8px rgba(0,0,0,.4);
   }
-  .bonus-head{padding:18px 18px 14px;cursor:pointer;display:flex;justify-content:space-between;gap:12px;align-items:flex-start;}
+  .bonus-head{padding:18px 18px 14px;cursor:pointer;display:flex;justify-content:space-between;gap:12px;
+    align-items:flex-start;-webkit-tap-highlight-color:transparent;transition:transform .12s;}
+  .bonus-head:active{transform:scale(.985);}
   .bonus-head .info h3{font-size:1.02rem;color:var(--white);margin-bottom:6px;letter-spacing:.2px;}
   .bonus-head .info .tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;}
   .tag{font-size:.65rem;padding:3px 10px;border-radius:3px;border:1px solid var(--line);color:var(--muted);
     text-transform:uppercase;letter-spacing:.6px;font-family:'Oswald',sans-serif;}
   .tag.valor{color:#1a1207;border-color:var(--gold);background:linear-gradient(180deg,var(--gold-light),var(--gold));font-weight:600;}
   .bonus-head .info .desc{font-size:.84rem;color:var(--muted);max-width:340px;font-family:'Inter';}
-  .bonus-head .arrow{color:var(--muted);font-size:1rem;transition:transform .25s;flex-shrink:0;margin-top:4px;}
-  .bonus-card.open .arrow{transform:rotate(180deg);color:var(--gold);}
+  .tap-hint{display:flex;align-items:center;gap:6px;margin-top:10px;font-size:.72rem;
+    color:var(--gold-light);font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:.8px;}
+  .tap-hint .finger{display:inline-block;animation:tapFinger 1.4s ease-in-out infinite;}
+  @keyframes tapFinger{0%,100%{transform:translateY(0);}50%{transform:translateY(-4px);}}
+  .bonus-card.open .tap-hint{display:none;}
+  @media (prefers-reduced-motion: reduce){ .tap-hint .finger{animation:none;} }
 
   .progress-ring-wrap{flex-shrink:0;text-align:center;}
-  .progress-track{height:5px;background:#000;border-radius:6px;overflow:hidden;margin-top:8px;width:96px;
+  .tap-chip{width:46px;height:46px;border-radius:50%;margin:0 auto;display:flex;align-items:center;
+    justify-content:center;background:linear-gradient(180deg,var(--gold-light),var(--gold-deep));
+    box-shadow:0 4px 14px rgba(242,169,59,.4);animation:tapPulse 2s ease-in-out infinite;position:relative;}
+  .bonus-card.open .tap-chip{animation:none;}
+  .tap-chip .arrow{color:#1a1207;font-size:1.3rem;font-weight:700;transition:transform .25s;line-height:1;}
+  .bonus-card.open .tap-chip .arrow{transform:rotate(180deg);}
+  @keyframes tapPulse{
+    0%,100%{box-shadow:0 4px 14px rgba(242,169,59,.4), 0 0 0 0 rgba(242,169,59,.5);}
+    50%{box-shadow:0 4px 14px rgba(242,169,59,.6), 0 0 0 9px rgba(242,169,59,0);}
+  }
+  @media (prefers-reduced-motion: reduce){ .tap-chip{animation:none;} }
+  .progress-track{height:5px;background:#000;border-radius:6px;overflow:hidden;margin-top:10px;width:96px;
     border:1px solid var(--line);}
   .progress-fill{height:100%;width:0%;transition:width .4s;
     background:linear-gradient(90deg,var(--gold-deep),var(--gold),var(--gold-light));
@@ -372,9 +389,10 @@ function renderizar(){
               ${b.valor ? `<span class="tag valor">${escapeHtml(b.valor)}</span>` : ''}
             </div>
             ${b.descricao ? `<div class="desc">${escapeHtml(b.descricao)}</div>` : ''}
+            <div class="tap-hint"><span class="finger">👆</span> Toque no ticket para ver o checklist</div>
           </div>
           <div class="progress-ring-wrap">
-            <span class="arrow">▾</span>
+            <div class="tap-chip"><span class="arrow">▾</span></div>
             <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
             <div class="progress-pct">${feitas}/${totalEtapas}</div>
           </div>
