@@ -114,12 +114,31 @@
   .checkbox-field input{width:auto;}
   .modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px;}
 
+  .cliente-row-wrap{margin-bottom:10px;opacity:0;animation:dealIn .4s ease forwards;}
   .cliente-row{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px 18px;
-    margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;
-    opacity:0;animation:dealIn .4s ease forwards;}
+    display:flex;justify-content:space-between;align-items:center;cursor:pointer;}
+  .cliente-row-wrap.open .cliente-row{border-radius:8px 8px 0 0;border-color:var(--gold-deep);}
   .cliente-row .nome{font-size:.9rem;}
   .cliente-row .email{font-size:.76rem;color:var(--muted);}
+  .cliente-row .right{display:flex;align-items:center;gap:10px;}
   .cliente-row .pct{font-family:'Oswald',sans-serif;color:var(--gold);font-size:1.15rem;font-weight:700;}
+  .cliente-row .arrow{color:var(--muted);font-size:.9rem;transition:transform .2s;}
+  .cliente-row-wrap.open .arrow{transform:rotate(180deg);color:var(--gold);}
+
+  .cliente-body{max-height:0;overflow:hidden;transition:max-height .3s ease;
+    background:var(--panel-strong);border:1px solid var(--gold-deep);border-top:none;border-radius:0 0 8px 8px;}
+  .cliente-row-wrap.open .cliente-body{max-height:1000px;}
+  .cliente-bonus-item{display:flex;justify-content:space-between;align-items:center;gap:12px;
+    padding:12px 18px;border-bottom:1px dashed var(--line);}
+  .cliente-bonus-item:last-child{border-bottom:none;}
+  .cbi-info strong{display:block;font-size:.86rem;margin-bottom:2px;}
+  .cbi-pct{font-size:.74rem;color:var(--muted);font-family:'Oswald',sans-serif;letter-spacing:.5px;}
+  .cbi-vazio{padding:16px 18px;color:var(--muted);font-size:.82rem;}
+  .btn-whats{display:flex;align-items:center;gap:6px;flex-shrink:0;padding:8px 14px;
+    border:1px solid #25D366;border-radius:6px;background:rgba(37,211,102,.1);
+    color:#25D366;font-size:.75rem;font-weight:600;cursor:pointer;font-family:'Oswald',sans-serif;
+    text-transform:uppercase;letter-spacing:.5px;}
+  .btn-whats:hover{background:#25D366;color:#06210f;}
 
   .vazio{text-align:center;color:var(--muted);padding:60px 20px;font-size:.9rem;}
 </style>
@@ -258,8 +277,16 @@ auth.onAuthStateChanged(user => {
 });
 
 function carregarDados(){
-  db.ref('bonus').on('value', snap => { bonusData = snap.val() || {}; renderBonus(); });
-  db.ref('usuarios').on('value', snap => { usuariosData = snap.val() || {}; renderClientes(); });
+  db.ref('bonus').on('value',
+    snap => { bonusData = snap.val() || {}; renderBonus(); renderClientes(); },
+    err => console.error('Erro ao carregar bônus:', err));
+  db.ref('usuarios').on('value',
+    snap => { usuariosData = snap.val() || {}; renderClientes(); },
+    err => {
+      console.error('Erro ao carregar clientes:', err);
+      document.getElementById('listaClientes').innerHTML =
+        '<div class="vazio">Não foi possível carregar os clientes.<br>Verifique se as regras do Realtime Database (aba Regras, no Firebase Console) liberam leitura de "usuarios" pra admin — veja o comentário em config.js.</div>';
+    });
 }
 
 function mudarTab(nome){
@@ -386,28 +413,89 @@ function renderClientes(){
   const lista = document.getElementById('listaClientes');
   if(ids.length===0){ lista.innerHTML = '<div class="vazio">Nenhum cliente cadastrado ainda.</div>'; return; }
 
-  const totalBonusAtivos = Object.values(bonusData).filter(b => b.ativo !== false && b.etapas).length;
+  const bonusIds = Object.keys(bonusData)
+    .filter(bid => bonusData[bid].ativo !== false && bonusData[bid].etapas && Object.keys(bonusData[bid].etapas).length)
+    .sort((a,b)=>(bonusData[a].ordem||0)-(bonusData[b].ordem||0));
 
   lista.innerHTML = ids.map((uid, idx) => {
     const u = usuariosData[uid];
     const progresso = u.progresso || {};
     let concluidos = 0;
-    Object.keys(bonusData).forEach(bid => {
+
+    const itensBonus = bonusIds.map(bid => {
       const b = bonusData[bid];
-      const etapaIds = b.etapas ? Object.keys(b.etapas) : [];
-      if(etapaIds.length===0) return;
-      const feitas = etapaIds.filter(eid => progresso[bid] && progresso[bid][eid]).length;
-      if(feitas === etapaIds.length) concluidos++;
-    });
+      const etapaIds = Object.keys(b.etapas).sort((a,c)=>(b.etapas[a].ordem||0)-(b.etapas[c].ordem||0));
+      const progBonus = progresso[bid] || {};
+      const feitas = etapaIds.filter(eid => progBonus[eid]).length;
+      const total = etapaIds.length;
+      if(total > 0 && feitas === total) concluidos++;
+      return `
+        <div class="cliente-bonus-item">
+          <div class="cbi-info">
+            <strong>${escapeHtml(b.titulo||'')}</strong>
+            <span class="cbi-pct">${feitas}/${total} etapas${b.valor ? ' · '+escapeHtml(b.valor) : ''}</span>
+          </div>
+          <button class="btn-whats" onclick="event.stopPropagation(); compartilharWhatsApp('${uid}','${bid}')">📲 WhatsApp</button>
+        </div>`;
+    }).join('') || '<div class="cbi-vazio">Nenhum chip bonus ativo no momento.</div>';
+
     return `
-      <div class="cliente-row" style="animation-delay:${idx*0.04}s">
-        <div>
-          <div class="nome">${escapeHtml(u.nome||'(sem nome)')}</div>
-          <div class="email">${escapeHtml(u.email||'')}</div>
+      <div class="cliente-row-wrap" id="cliwrap-${uid}" style="animation-delay:${idx*0.04}s">
+        <div class="cliente-row" onclick="toggleClienteRow('${uid}')">
+          <div>
+            <div class="nome">${escapeHtml(u.nome||'(sem nome)')}</div>
+            <div class="email">${escapeHtml(u.email||'')}</div>
+          </div>
+          <div class="right">
+            <div class="pct">${concluidos}/${bonusIds.length}</div>
+            <span class="arrow">▾</span>
+          </div>
         </div>
-        <div class="pct">${concluidos}/${totalBonusAtivos}</div>
+        <div class="cliente-body">${itensBonus}</div>
       </div>`;
   }).join('');
+}
+
+function toggleClienteRow(uid){
+  document.getElementById('cliwrap-'+uid).classList.toggle('open');
+}
+
+function compartilharWhatsApp(uid, bid){
+  const u = usuariosData[uid];
+  const b = bonusData[bid];
+  if(!u || !b){ alert('Não foi possível montar a mensagem.'); return; }
+
+  const etapaIds = Object.keys(b.etapas || {}).sort((a,c)=>(b.etapas[a].ordem||0)-(b.etapas[c].ordem||0));
+  const progBonus = (u.progresso && u.progresso[bid]) || {};
+  const feitas = etapaIds.filter(eid => progBonus[eid]).length;
+  const total = etapaIds.length;
+  const pendentes = etapaIds.filter(eid => !progBonus[eid]).map(eid => b.etapas[eid].texto);
+  const primeiroNome = (u.nome || '').trim().split(' ')[0] || 'campeão';
+  const valor = b.valor ? `*${b.valor}*` : 'seu chip bonus';
+
+  let msg = `🃏 *Poker Osasco* 🃏\n\nOi ${primeiroNome}! Tudo certo? 👋\n\n`;
+
+  if(total > 0 && feitas === total){
+    // gatilho: reconhecimento + prova social + próximo passo
+    msg += `Parabéns! Você concluiu *todas as etapas* do *${b.titulo}* e já garantiu ${valor} 🏆🔥\n\n`;
+    msg += `Você tá entre os poucos que já bateram o checklist completo essa semana 💪\n\n`;
+    msg += `Já te espero na próxima mesa pra usar suas fichas! 🎯`;
+  } else if(total > 0){
+    // gatilhos: compromisso/coerência (já começou) + escassez + urgência + prova social
+    msg += `Vi aqui que você já começou o *${b.titulo}* e está a só *${total-feitas} passo(s)* de garantir ${valor} 🔥\n\n`;
+    msg += `✅ Você já concluiu ${feitas} de ${total} etapas — tá quase lá, seria pena parar agora!\n\n`;
+    if(pendentes.length){
+      msg += `📌 O que ainda falta:\n` + pendentes.map(p => '☐ ' + p).join('\n') + `\n\n`;
+    }
+    msg += `Esse chip bonus é exclusivo pra quem já tá no clube, e cada leva tem fichas limitadas — vários já resgataram esta semana 💰\n\n`;
+    msg += `Qualquer dúvida me chama aqui mesmo, te ajudo a fechar agora! 🎯`;
+  } else {
+    // gatilho: reciprocidade + exclusividade
+    msg += `Separei um *${b.titulo}* exclusivo pra você aqui no clube 🎁\n\n`;
+    msg += `É rapidinho de resgatar e garante ${valor} — bora começar? 🎯`;
+  }
+
+  window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
 }
 
 function escapeHtml(str){ const d=document.createElement('div'); d.textContent=str||''; return d.innerHTML; }

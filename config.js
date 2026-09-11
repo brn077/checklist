@@ -22,8 +22,14 @@ const auth = firebase.auth();
 const db = firebase.database();
 
 // ============================================================
-// REGRAS DE SEGURANÇA SUGERIDAS (cole em Realtime Database > Regras)
+// REGRAS DE SEGURANÇA (cole em Realtime Database > Regras)
 // ============================================================
+// IMPORTANTE: se a aba "Clientes" do admin.html não carrega ninguém,
+// é porque as regras não têm ".read" no nó "usuarios" (nível pai) —
+// só no "$uid" (nível de cada usuário). O Realtime Database NÃO
+// permite ler o nó pai inteiro usando apenas uma regra do filho;
+// é preciso liberar explicitamente a leitura do nó pai pra admin.
+// Cole exatamente isto no Firebase Console:
 /*
 {
   "rules": {
@@ -32,8 +38,9 @@ const db = firebase.database();
       ".write": "root.child('admins').child(auth.uid).val() === true"
     },
     "usuarios": {
+      ".read": "auth != null && root.child('admins').child(auth.uid).val() === true",
       "$uid": {
-        ".read": "auth != null && ($uid === auth.uid || root.child('admins').child(auth.uid).val() === true)",
+        ".read": "auth != null && $uid === auth.uid",
         ".write": "auth != null && ($uid === auth.uid || root.child('admins').child(auth.uid).val() === true)"
       }
     },
