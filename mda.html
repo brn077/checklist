@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Poker Osasco | Admin de Bônus</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0A0A0A; --bg2:#121212;
+    --gold:#F2A93B; --gold-light:#FFD37A; --gold-deep:#B87A1E;
+    --red:#C41E3A; --red-deep:#7A0E1F;
+    --white:#FFFFFF; --muted:#9BA3A8;
+    --line:rgba(255,255,255,.09); --panel:rgba(255,255,255,.035); --panel-strong:rgba(0,0,0,.6);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;min-height:100vh;background:
+      radial-gradient(ellipse 900px 500px at 50% -10%, rgba(242,169,59,.08), transparent 60%),
+      var(--bg);
+    font-family:'Inter',sans-serif;color:var(--white);position:relative;}
+  h1,h2,h3{font-family:'Oswald',sans-serif;margin:0;text-transform:uppercase;letter-spacing:.5px;}
+
+  .topline{position:fixed;top:0;left:0;width:100%;height:5px;z-index:50;
+    background:linear-gradient(90deg,var(--red-deep),var(--red) 40%,var(--gold) 50%,var(--red) 60%,var(--red-deep));
+    background-size:250% 100%;animation:sweep 5s linear infinite;}
+  @keyframes sweep{0%{background-position:100% 0;}100%{background-position:-100% 0;}}
+  @media (prefers-reduced-motion: reduce){ .topline{animation:none;} }
+
+  .wrap{max-width:920px;margin:0 auto;padding:36px 20px 100px;}
+
+  .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:30px;}
+  .brand{display:flex;align-items:center;gap:12px;}
+  .brand span{font-family:'Oswald',sans-serif;font-size:1.05rem;letter-spacing:1px;color:var(--gold-light);}
+  #btnSair{background:transparent;border:1px solid var(--line);color:var(--muted);padding:8px 16px;
+    border-radius:4px;font-family:'Oswald',sans-serif;font-size:.78rem;letter-spacing:1px;
+    text-transform:uppercase;cursor:pointer;}
+  #btnSair:hover{border-color:var(--gold);color:var(--gold-light);}
+
+  .auth-card{background:linear-gradient(180deg,var(--bg2),#0d0d0d);border:1px solid var(--line);
+    border-radius:10px;padding:38px 32px;max-width:400px;margin:9vh auto 0;box-shadow:0 20px 50px rgba(0,0,0,.5);}
+  .auth-card h1{font-size:1.4rem;color:var(--gold-light);margin-bottom:6px;}
+  .auth-card p.sub{color:var(--muted);margin:0 0 24px;font-size:.88rem;font-family:'Inter';text-transform:none;letter-spacing:0;}
+  .field{margin-bottom:16px;}
+  .field label{display:block;font-size:.72rem;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px;}
+  .field input, .field select, .field textarea{
+    width:100%;padding:11px 13px;border-radius:6px;border:1px solid var(--line);
+    background:#000;color:var(--white);font-family:'Inter',sans-serif;font-size:.92rem;
+  }
+  .field textarea{resize:vertical;min-height:60px;}
+  .field input:focus, .field select:focus, .field textarea:focus{outline:none;border-color:var(--gold);}
+
+  .btn-primary{padding:12px 22px;border:none;border-radius:6px;position:relative;overflow:hidden;
+    background:linear-gradient(180deg,var(--gold-light),var(--gold-deep));color:#1a1207;font-weight:700;
+    font-size:.82rem;cursor:pointer;font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:1.5px;}
+  .btn-primary::after{content:"";position:absolute;top:0;left:-60%;width:40%;height:100%;
+    background:linear-gradient(120deg,transparent,rgba(255,255,255,.5),transparent);
+    transform:skewX(-20deg);animation:shine 3.2s ease-in-out infinite;}
+  @keyframes shine{0%{left:-60%;}45%{left:120%;}100%{left:120%;}}
+  .btn-primary:hover{filter:brightness(1.06);}
+  .btn-ghost{padding:10px 18px;border:1px solid var(--line);border-radius:6px;background:transparent;
+    color:var(--muted);font-size:.8rem;cursor:pointer;font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:1px;}
+  .btn-ghost:hover{border-color:var(--gold);color:var(--gold-light);}
+  .btn-danger{padding:8px 14px;border:1px solid #5a2626;border-radius:5px;background:transparent;
+    color:#e08787;font-size:.75rem;cursor:pointer;font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:.5px;}
+  .btn-danger:hover{background:#2a1414;}
+  .auth-msg{background:#2a0f14;border:1px solid var(--red);color:#f5c6cc;padding:10px 12px;
+    border-radius:6px;font-size:.82rem;margin-bottom:16px;display:none;}
+
+  .tabs{display:flex;gap:8px;margin-bottom:26px;}
+  .tab{padding:10px 20px;color:var(--muted);cursor:pointer;font-size:.82rem;border-radius:20px;
+    border:1px solid var(--line);font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:1px;}
+  .tab.active{color:#1a1207;background:linear-gradient(180deg,var(--gold-light),var(--gold));border-color:var(--gold);font-weight:600;}
+
+  .toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;}
+  .toolbar span{color:var(--muted);font-size:.82rem;font-family:'Oswald',sans-serif;letter-spacing:.5px;}
+
+  .bonus-row{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:16px 18px;
+    margin-bottom:12px;display:flex;justify-content:space-between;gap:14px;align-items:flex-start;
+    opacity:0;animation:dealIn .4s ease forwards;position:relative;overflow:hidden;}
+  @keyframes dealIn{from{opacity:0;transform:translateX(-16px);}to{opacity:1;transform:translateX(0);}}
+  .bonus-row .info h3{font-size:1rem;margin-bottom:6px;letter-spacing:.2px;}
+  .bonus-row .tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px;}
+  .tag{font-size:.63rem;padding:3px 9px;border-radius:3px;border:1px solid var(--line);color:var(--muted);
+    text-transform:uppercase;letter-spacing:.5px;font-family:'Oswald',sans-serif;}
+  .tag.valor{color:#1a1207;border-color:var(--gold);background:linear-gradient(180deg,var(--gold-light),var(--gold));font-weight:600;}
+  .tag.inativo{color:#e08787;border-color:#5a2626;background:#2a1414;}
+  .bonus-row .info .desc{font-size:.82rem;color:var(--muted);max-width:420px;}
+  .bonus-row .info .etapas-count{font-size:.72rem;color:var(--muted);margin-top:6px;font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:.5px;}
+  .actions{display:flex;gap:8px;flex-shrink:0;}
+  .actions button{padding:7px 13px;border-radius:5px;border:1px solid var(--line);background:transparent;
+    color:var(--muted);font-size:.72rem;cursor:pointer;font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:.5px;}
+  .actions button:hover{border-color:var(--gold);color:var(--gold-light);}
+
+  /* Modal: aparece como uma carta sendo virada na mesa */
+  .overlay{display:none;position:fixed;inset:0;background:#000000c0;align-items:flex-start;
+    justify-content:center;padding:5vh 20px;overflow-y:auto;z-index:10;perspective:1200px;}
+  .overlay.show{display:flex;}
+  .modal{background:linear-gradient(180deg,var(--bg2),#0d0d0d);border:1px solid var(--line);
+    border-radius:12px;padding:28px;max-width:560px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,.6);
+    transform:rotateX(-12deg) translateY(20px) scale(.96);opacity:0;
+    animation:dealModal .35s cubic-bezier(.2,.8,.3,1) forwards;}
+  @keyframes dealModal{to{transform:rotateX(0) translateY(0) scale(1);opacity:1;}}
+  .modal h2{font-size:1.2rem;color:var(--gold-light);margin-bottom:18px;}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .etapa-edit{display:flex;gap:8px;margin-bottom:8px;align-items:center;}
+  .etapa-edit input{flex:1;}
+  .etapa-edit button{background:transparent;border:1px solid var(--line);color:var(--red);
+    border-radius:5px;width:34px;height:34px;cursor:pointer;flex-shrink:0;}
+  .add-etapa{background:transparent;border:1px dashed var(--line);color:var(--muted);border-radius:6px;
+    padding:9px;width:100%;cursor:pointer;font-size:.82rem;margin-top:4px;font-family:'Inter';}
+  .add-etapa:hover{border-color:var(--gold);color:var(--gold-light);}
+  .checkbox-field{display:flex;align-items:center;gap:8px;margin-bottom:16px;}
+  .checkbox-field input{width:auto;}
+  .modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px;}
+
+  .cliente-row{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px 18px;
+    margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;
+    opacity:0;animation:dealIn .4s ease forwards;}
+  .cliente-row .nome{font-size:.9rem;}
+  .cliente-row .email{font-size:.76rem;color:var(--muted);}
+  .cliente-row .pct{font-family:'Oswald',sans-serif;color:var(--gold);font-size:1.15rem;font-weight:700;}
+
+  .vazio{text-align:center;color:var(--muted);padding:60px 20px;font-size:.9rem;}
+</style>
+</head>
+<body>
+<div class="topline"></div>
+<div class="wrap">
+  <div class="topbar">
+    <div class="brand">
+      <svg width="40" height="40" viewBox="0 0 120 120">
+        <circle cx="60" cy="60" r="56" fill="#111" stroke="#F2A93B" stroke-width="2.5"/>
+        <g fill="#F2A93B" font-size="15" text-anchor="middle">
+          <text x="33" y="36" transform="rotate(-20 33 36)">♣</text>
+          <text x="49" y="24" transform="rotate(-7 49 24)">♦</text>
+          <text x="71" y="24" transform="rotate(7 71 24)">♥</text>
+          <text x="87" y="36" transform="rotate(20 87 36)">♠</text>
+        </g>
+        <text x="60" y="70" text-anchor="middle" font-family="Oswald" font-weight="700" font-size="16" fill="#fff">PO</text>
+        <path d="M38 90 L60 99 L82 90" stroke="#F2A93B" stroke-width="3" fill="none" stroke-linecap="round"/>
+      </svg>
+      <span>Admin de Bônus</span>
+    </div>
+    <button id="btnSair" style="display:none;">Sair</button>
+  </div>
+
+  <!-- LOGIN -->
+  <div id="telaAuth" class="auth-card">
+    <div id="authMsg" class="auth-msg"></div>
+    <h1>Acesso restrito</h1>
+    <p class="sub">Entre com sua conta de administrador.</p>
+    <div class="field"><label>E-mail</label><input type="email" id="loginEmail"></div>
+    <div class="field"><label>Senha</label><input type="password" id="loginSenha"></div>
+    <button class="btn-primary" style="width:100%;" onclick="fazerLogin()">Entrar</button>
+  </div>
+
+  <!-- APP -->
+  <div id="telaApp" style="display:none;">
+    <div class="tabs">
+      <div class="tab active" data-tab="bonus" onclick="mudarTab('bonus')">Bônus</div>
+      <div class="tab" data-tab="clientes" onclick="mudarTab('clientes')">Clientes</div>
+    </div>
+
+    <div id="painelBonus">
+      <div class="toolbar">
+        <span id="contadorBonus"></span>
+        <button class="btn-primary" onclick="abrirModal()">+ Novo bônus</button>
+      </div>
+      <div id="listaBonusAdmin"></div>
+    </div>
+
+    <div id="painelClientes" style="display:none;">
+      <div id="listaClientes"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DE BÔNUS -->
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <h2 id="modalTitulo">Novo bônus</h2>
+    <input type="hidden" id="bonusId">
+    <div class="field"><label>Título do bônus</label><input type="text" id="fTitulo" placeholder="Ex: Bônus de boas-vindas 100%"></div>
+    <div class="row2">
+      <div class="field"><label>Plataforma / Site</label><input type="text" id="fPlataforma" placeholder="Ex: NomeDoSite"></div>
+      <div class="field"><label>Categoria</label>
+        <select id="fCategoria">
+          <option value="Boas-vindas">Boas-vindas</option>
+          <option value="Recarga">Recarga</option>
+          <option value="Rakeback">Rakeback</option>
+          <option value="Freeroll">Freeroll</option>
+          <option value="Cashback">Cashback</option>
+          <option value="Indicação">Indicação</option>
+          <option value="Outro">Outro</option>
+        </select>
+      </div>
+    </div>
+    <div class="row2">
+      <div class="field"><label>Valor do bônus</label><input type="text" id="fValor" placeholder="Ex: R$ 50 ou até 100%"></div>
+      <div class="field"><label>Validade</label><input type="date" id="fValidade"></div>
+    </div>
+    <div class="field"><label>Descrição (aparece para o cliente)</label><textarea id="fDescricao" placeholder="Resumo curto do bônus"></textarea></div>
+    <div class="field"><label>Regras / observações</label><textarea id="fRegras" placeholder="Termos, rollover, condições..."></textarea></div>
+
+    <div class="field">
+      <label>Etapas do checklist</label>
+      <div id="listaEtapasForm"></div>
+      <button type="button" class="add-etapa" onclick="adicionarEtapaForm()">+ Adicionar etapa</button>
+    </div>
+
+    <div class="checkbox-field">
+      <input type="checkbox" id="fAtivo" checked>
+      <label for="fAtivo" style="margin:0;">Bônus ativo (visível para clientes)</label>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-ghost" onclick="fecharModal()">Cancelar</button>
+      <button class="btn-primary" onclick="salvarBonus()">Salvar bônus</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="config.js"></script>
+<script>
+let bonusData = {};
+let usuariosData = {};
+let etapasFormLocal = [];
+let uidAtual = null;
+
+function mostrarErro(msg){ const el=document.getElementById('authMsg'); el.textContent=msg; el.style.display='block'; }
+function limparErro(){ document.getElementById('authMsg').style.display='none'; }
+
+function traduzErro(code){
+  const mapa = {
+    'auth/user-not-found':'Conta não encontrada.',
+    'auth/wrong-password':'Senha incorreta.',
+    'auth/invalid-credential':'E-mail ou senha incorretos.',
+    'auth/invalid-email':'E-mail inválido.'
+  };
+  return mapa[code] || 'Ocorreu um erro. Tente novamente.';
+}
+
+function fazerLogin(){
+  limparErro();
+  const email = document.getElementById('loginEmail').value.trim();
+  const senha = document.getElementById('loginSenha').value;
+  if(!email || !senha){ mostrarErro('Preencha e-mail e senha.'); return; }
+  auth.signInWithEmailAndPassword(email, senha).catch(err => mostrarErro(traduzErro(err.code)));
+}
+document.getElementById('btnSair').addEventListener('click', () => auth.signOut());
+
+auth.onAuthStateChanged(user => {
+  if(user){
+    db.ref('admins/' + user.uid).once('value').then(snap => {
+      if(snap.val() === true){
+        uidAtual = user.uid;
+        document.getElementById('telaAuth').style.display='none';
+        document.getElementById('telaApp').style.display='block';
+        document.getElementById('btnSair').style.display='inline-block';
+        carregarDados();
+      } else {
+        mostrarErro('Esta conta não tem permissão de administrador.');
+        auth.signOut();
+      }
+    });
+  } else {
+    uidAtual = null;
+    document.getElementById('telaApp').style.display='none';
+    document.getElementById('telaAuth').style.display='block';
+    document.getElementById('btnSair').style.display='none';
+  }
+});
+
+function carregarDados(){
+  db.ref('bonus').on('value', snap => { bonusData = snap.val() || {}; renderBonus(); });
+  db.ref('usuarios').on('value', snap => { usuariosData = snap.val() || {}; renderClientes(); });
+}
+
+function mudarTab(nome){
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab===nome));
+  document.getElementById('painelBonus').style.display = nome==='bonus' ? 'block' : 'none';
+  document.getElementById('painelClientes').style.display = nome==='clientes' ? 'block' : 'none';
+}
+
+function renderBonus(){
+  const ids = Object.keys(bonusData).sort((a,b)=>(bonusData[a].ordem||0)-(bonusData[b].ordem||0));
+  document.getElementById('contadorBonus').textContent = `${ids.length} bônus cadastrado(s)`;
+  const lista = document.getElementById('listaBonusAdmin');
+  if(ids.length===0){ lista.innerHTML = '<div class="vazio">Nenhum bônus cadastrado ainda.</div>'; return; }
+
+  lista.innerHTML = ids.map((id, idx) => {
+    const b = bonusData[id];
+    const totalEtapas = b.etapas ? Object.keys(b.etapas).length : 0;
+    return `
+      <div class="bonus-row" style="animation-delay:${idx*0.05}s">
+        <div class="info">
+          <h3>${escapeHtml(b.titulo||'')}</h3>
+          <div class="tags">
+            ${b.plataforma ? `<span class="tag">${escapeHtml(b.plataforma)}</span>` : ''}
+            ${b.categoria ? `<span class="tag">${escapeHtml(b.categoria)}</span>` : ''}
+            ${b.valor ? `<span class="tag valor">${escapeHtml(b.valor)}</span>` : ''}
+            ${b.ativo===false ? '<span class="tag inativo">inativo</span>' : ''}
+          </div>
+          ${b.descricao ? `<div class="desc">${escapeHtml(b.descricao)}</div>` : ''}
+          <div class="etapas-count">${totalEtapas} etapa(s) no checklist</div>
+        </div>
+        <div class="actions">
+          <button onclick="editarBonus('${id}')">Editar</button>
+          <button class="btn-danger" onclick="excluirBonus('${id}')">Excluir</button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function abrirModal(){
+  document.getElementById('modalTitulo').textContent = 'Novo bônus';
+  document.getElementById('bonusId').value = '';
+  document.getElementById('fTitulo').value = '';
+  document.getElementById('fPlataforma').value = '';
+  document.getElementById('fCategoria').value = 'Boas-vindas';
+  document.getElementById('fValor').value = '';
+  document.getElementById('fValidade').value = '';
+  document.getElementById('fDescricao').value = '';
+  document.getElementById('fRegras').value = '';
+  document.getElementById('fAtivo').checked = true;
+  etapasFormLocal = [{texto:''}];
+  renderEtapasForm();
+  mostrarModal();
+}
+function mostrarModal(){
+  const ov = document.getElementById('overlay');
+  ov.classList.add('show');
+  const modal = ov.querySelector('.modal');
+  modal.style.animation = 'none'; void modal.offsetWidth; modal.style.animation = '';
+}
+function fecharModal(){ document.getElementById('overlay').classList.remove('show'); }
+
+function editarBonus(id){
+  const b = bonusData[id];
+  document.getElementById('modalTitulo').textContent = 'Editar bônus';
+  document.getElementById('bonusId').value = id;
+  document.getElementById('fTitulo').value = b.titulo || '';
+  document.getElementById('fPlataforma').value = b.plataforma || '';
+  document.getElementById('fCategoria').value = b.categoria || 'Boas-vindas';
+  document.getElementById('fValor').value = b.valor || '';
+  document.getElementById('fValidade').value = b.validade || '';
+  document.getElementById('fDescricao').value = b.descricao || '';
+  document.getElementById('fRegras').value = b.regras || '';
+  document.getElementById('fAtivo').checked = b.ativo !== false;
+
+  const etapas = b.etapas || {};
+  const ids = Object.keys(etapas).sort((x,y)=>(etapas[x].ordem||0)-(etapas[y].ordem||0));
+  etapasFormLocal = ids.length ? ids.map(eid => ({id:eid, texto:etapas[eid].texto||''})) : [{texto:''}];
+  renderEtapasForm();
+  mostrarModal();
+}
+
+function renderEtapasForm(){
+  const cont = document.getElementById('listaEtapasForm');
+  cont.innerHTML = etapasFormLocal.map((e,i) => `
+    <div class="etapa-edit">
+      <input type="text" value="${escapeHtmlAttr(e.texto)}" placeholder="Ex: Fazer o primeiro depósito" oninput="etapasFormLocal[${i}].texto=this.value">
+      <button type="button" onclick="removerEtapaForm(${i})">✕</button>
+    </div>`).join('');
+}
+function adicionarEtapaForm(){ etapasFormLocal.push({texto:''}); renderEtapasForm(); }
+function removerEtapaForm(i){
+  etapasFormLocal.splice(i,1);
+  if(etapasFormLocal.length===0) etapasFormLocal.push({texto:''});
+  renderEtapasForm();
+}
+
+function salvarBonus(){
+  const titulo = document.getElementById('fTitulo').value.trim();
+  if(!titulo){ alert('Dê um título ao bônus.'); return; }
+
+  const id = document.getElementById('bonusId').value || db.ref('bonus').push().key;
+  const etapasObj = {};
+  etapasFormLocal
+    .filter(e => e.texto && e.texto.trim())
+    .forEach((e, idx) => {
+      const eid = e.id || db.ref('bonus').push().key;
+      etapasObj[eid] = { texto: e.texto.trim(), ordem: idx };
+    });
+
+  const bonusObj = {
+    titulo,
+    plataforma: document.getElementById('fPlataforma').value.trim(),
+    categoria: document.getElementById('fCategoria').value,
+    valor: document.getElementById('fValor').value.trim(),
+    validade: document.getElementById('fValidade').value,
+    descricao: document.getElementById('fDescricao').value.trim(),
+    regras: document.getElementById('fRegras').value.trim(),
+    ativo: document.getElementById('fAtivo').checked,
+    ordem: (bonusData[id] && bonusData[id].ordem) || Object.keys(bonusData).length,
+    etapas: etapasObj
+  };
+
+  db.ref('bonus/' + id).set(bonusObj).then(fecharModal);
+}
+
+function excluirBonus(id){
+  if(confirm('Excluir este bônus? Essa ação não pode ser desfeita.')){
+    db.ref('bonus/' + id).remove();
+  }
+}
+
+function renderClientes(){
+  const ids = Object.keys(usuariosData);
+  const lista = document.getElementById('listaClientes');
+  if(ids.length===0){ lista.innerHTML = '<div class="vazio">Nenhum cliente cadastrado ainda.</div>'; return; }
+
+  const totalBonusAtivos = Object.values(bonusData).filter(b => b.ativo !== false && b.etapas).length;
+
+  lista.innerHTML = ids.map((uid, idx) => {
+    const u = usuariosData[uid];
+    const progresso = u.progresso || {};
+    let concluidos = 0;
+    Object.keys(bonusData).forEach(bid => {
+      const b = bonusData[bid];
+      const etapaIds = b.etapas ? Object.keys(b.etapas) : [];
+      if(etapaIds.length===0) return;
+      const feitas = etapaIds.filter(eid => progresso[bid] && progresso[bid][eid]).length;
+      if(feitas === etapaIds.length) concluidos++;
+    });
+    return `
+      <div class="cliente-row" style="animation-delay:${idx*0.04}s">
+        <div>
+          <div class="nome">${escapeHtml(u.nome||'(sem nome)')}</div>
+          <div class="email">${escapeHtml(u.email||'')}</div>
+        </div>
+        <div class="pct">${concluidos}/${totalBonusAtivos}</div>
+      </div>`;
+  }).join('');
+}
+
+function escapeHtml(str){ const d=document.createElement('div'); d.textContent=str||''; return d.innerHTML; }
+function escapeHtmlAttr(str){ return (str||'').replace(/"/g,'&quot;'); }
+</script>
+</body>
+</html>
